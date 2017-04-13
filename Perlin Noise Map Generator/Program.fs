@@ -7,8 +7,8 @@
  *)
 
 open System
-open System.Drawing
 open System.IO
+open System.Drawing
 open System.Drawing.Imaging
 
 type Noise(xSeed :int, xOctaves :float, xPersistence :float) =
