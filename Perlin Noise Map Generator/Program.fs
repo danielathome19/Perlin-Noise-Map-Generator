@@ -11,18 +11,20 @@ open System.IO
 open System.Drawing
 open System.Drawing.Imaging
 
-type Noise(xSeed :int, xOctaves :float, xPersistence :float) =
-    let seed :int           = xSeed
-    let octaves :float      = xOctaves
-    let persistence :float  = xPersistence
-    let smoothing :float    = 4.0
-
-    new(xSeed :int, xOctaves :float) = Noise(xSeed, xOctaves, 0.25)
-    new(xSeed :int) = Noise(xSeed, 4.0, 0.25)
+type Noise = class
+    val seed :int         
+    val octaves :float    
+    val persistence :float
+    val smoothing :float
+    
+    new(Seed :int, Octaves :float, Persistence :float, Smoothing :float) = {seed = Seed; octaves = Octaves; persistence = Persistence; smoothing = Smoothing; }
+    new(Seed :int, Octaves :float, Persistence :float) = Noise(Seed, Octaves, Persistence, 4.0)
+    new(Seed :int, Octaves :float) = Noise(Seed, Octaves, 0.25)
+    new(Seed :int) = Noise(Seed, 4.0, 0.25)
 
     member this.rawNoise(x :float) =
         let n :int = ((int)x <<< 13) ^^^ ((int)x)
-        (1.0f - (float32)((n * (n * n * 15731 * seed + 789221 * seed) + 1376312589 * seed) &&& 0x7fffffff) / (float32)1073741824.0)
+        (1.0f - (float32)((n * (n * n * 15731 * this.seed + 789221 * this.seed) + 1376312589 * this.seed) &&& 0x7fffffff) / (float32)1073741824.0)
 
     member this.rawNoise2D(x :float, y :float) =
         this.rawNoise(x + y * 57.0)
@@ -30,7 +32,7 @@ type Noise(xSeed :int, xOctaves :float, xPersistence :float) =
     member this.smoothNoise(x :float) =
         let left = this.rawNoise(x - 1.0)
         let right = this.rawNoise(x - 1.0)
-        (this.rawNoise(x) / 2.0f) + (left / (float32)smoothing) + (right / (float32)smoothing);
+        (this.rawNoise(x) / 2.0f) + (left / (float32)this.smoothing) + (right / (float32)this.smoothing);
 
     member this.smoothNoise2D(x :float, y :float) =
         let corners = this.rawNoise2D(x - 1.0, y - 1.0) + this.rawNoise2D(x - 1.0, y + 1.0) + this.rawNoise2D(x + 1.0, y - 1.0) + this.rawNoise2D(x + 1.0, y + 1.0)
@@ -58,9 +60,9 @@ type Noise(xSeed :int, xOctaves :float, xPersistence :float) =
         let mutable frequency :float = 0.0
         let mutable amplitude :float = 0.0
 
-        for i = 0 to (int)octaves - 1 do
+        for i = 0 to (int)this.octaves - 1 do
             frequency <- (float)(Math.Pow(2.0, (float)i))
-            amplitude <- (float)(Math.Pow(persistence, (float)i))
+            amplitude <- (float)(Math.Pow(this.persistence, (float)i))
             total <- total + this.interpolateNoise(x * frequency) * amplitude
         total
 
@@ -69,9 +71,9 @@ type Noise(xSeed :int, xOctaves :float, xPersistence :float) =
         let mutable frequency :float = 0.0
         let mutable amplitude :float = 0.0
 
-        for i = 0 to (int)octaves - 1 do
+        for i = 0 to (int)this.octaves - 1 do
             frequency <- (float)(Math.Pow(2.0, (float)i))
-            amplitude <- (float)(Math.Pow(persistence, (float)i))
+            amplitude <- (float)(Math.Pow(this.persistence, (float)i))
             total <- total + this.interpolateNoise2D(x * frequency, y * frequency) * amplitude
         total
     
@@ -81,6 +83,7 @@ type Noise(xSeed :int, xOctaves :float, xPersistence :float) =
             for x = 0 to w - 1 do
                 noise.[x, y] <- this.perlinNoise2D((float)x, (float)y)
         noise
+end
 
 [<EntryPoint>]
 let main argv = 
@@ -116,5 +119,5 @@ let main argv =
     
     printfn "Image successfully saved"
 
-    ignore(Console.ReadKey())
+    Console.ReadKey() |> ignore
     0
