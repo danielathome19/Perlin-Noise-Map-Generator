@@ -10,7 +10,7 @@ A float matrix of specified width and height can be generated entirely by the __
 The __Program.fs__ file contains the Noise class as well as a demonstration of generating a bitmap from perlin noise.
 
 # Bugs/Features
-Bugs are tracked using the Github Issue Tracker.
+Bugs are tracked using the GitHub Issue Tracker.
 
 Please use the issue tracker for the following purpose:
   * To raise a bug request; do include specific details and label it appropriately.
